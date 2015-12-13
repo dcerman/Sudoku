@@ -23,7 +23,18 @@ namespace Sudoku
             set {
                 if (value.Length == (MaxPos+1) * (MaxPos+1))
                 {
-                    _field = value;
+                    // Initialize cell-by-cell to normalize out-of-range values to 0.
+                    for (int row = MinPos; row <= MaxPos; row++)
+                    {
+                        for (int col = MinPos; col <= MaxPos; col++)
+                        {
+                            SetCell(row, col, value[row, col]);
+                        }
+                    }
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException("value", "int[9,9] required.");
                 }
             }
         }
@@ -62,7 +73,15 @@ namespace Sudoku
         {
             if (row < MinPos || row > MaxPos) throw new ArgumentOutOfRangeException();
             if (column < MinPos || column > MaxPos) throw new ArgumentOutOfRangeException();
-            _field[row, column] = number;
+            if (number >= MinNum && number <= MaxNum)
+            {
+                _field[row, column] = number;
+            }
+            else
+            {
+                // Treat out-of-range numbers as blank cells, represented by 0
+                _field[row, column] = 0;
+            }
         }
 
         public bool IsValidColumn(int column)
@@ -108,7 +127,7 @@ namespace Sudoku
         {
             int[] values = GetZone(zone);
 
-            int[] appears = new int[10];    // 0 is blank
+            int[] appears = new int[10];
             for (int position = MinPos; position <= MaxPos; position++)
             {
                 int number = values[position];
@@ -129,7 +148,7 @@ namespace Sudoku
                 {
                     sb.AppendLine("+-------+-------+-------+");
                 }
-                for (int c = MinPos; c < MaxPos; c++)
+                for (int c = MinPos; c <= MaxPos; c++)
                 {
                     if (c % 3 == 0)
                     {
