@@ -12,13 +12,16 @@ namespace Sudoku
 {
     public class SudokuField
     {
+        const int MinPos = 0, MaxPos = 8;
+        const int MinNum = 1, MaxNum = 9;
+        
         private int[,] _field;
 
         public int[,] Field
         {
             get { return _field; }
             set {
-                if (value.Length == 81)
+                if (value.Length == (MaxPos+1) * (MaxPos+1))
                 {
                     _field = value;
                 }
@@ -26,47 +29,49 @@ namespace Sudoku
         }
 
         public SudokuField() :
-            this(new int[9,9])
-        {
-        }
+            this(new int[MaxPos+1, MaxPos+1])
+        {}
 
         public SudokuField(int[,] initialField)
         {
             _field = initialField;
         }
 
-        public int GetCell(int row, int column) {
-            if (row < 0 || row > 8) throw new ArgumentOutOfRangeException();
-            if (column < 0 || column > 8) throw new ArgumentOutOfRangeException();
-            return _field[row, column];
+        public int GetCell(int row, int col) {
+            if (row < MinPos || row > MaxPos) throw new ArgumentOutOfRangeException();
+            if (col < MinPos || col > MaxPos) throw new ArgumentOutOfRangeException();
+            return _field[row, col];
         }
 
         public int[] GetZone(int zone)
         {
-            if (zone < 0 || zone > 8) throw new ArgumentOutOfRangeException();
-            int[] values = new int[9];
+            if (zone < MinPos || zone > MaxPos) throw new ArgumentOutOfRangeException();
+            int[] values = new int[MaxPos+1];
+            int row, column;
 
-            for (int position = 0; position < 9; position++)
+            for (int position = MinPos; position < MaxPos; position++)
             {
-                values[position] = _field[zone/3*3+position/3, zone%3*3+position%3];
+                row = zone / 3 * 3 + position / 3;
+                column = zone % 3 * 3 + position % 3;
+                values[position] = _field[row, column];
             }
             return values;
         }
 
         public void SetCell(int row, int column, int number)
         {
-            if (row < 0 || row > 8) throw new ArgumentOutOfRangeException();
-            if (column < 1 || column > 9) throw new ArgumentOutOfRangeException();
+            if (row < MinPos || row > MaxPos) throw new ArgumentOutOfRangeException();
+            if (column < MinPos || column > MaxPos) throw new ArgumentOutOfRangeException();
             _field[row, column] = number;
         }
 
         public bool IsValidColumn(int column)
         {
             int[] appears = new int[10];
-            for (int row = 0; row < 9; row++)
+            for (int row = MinPos; row < MaxPos; row++)
             {
                 int number = _field[row, column];
-                if (number < 1 || number > 9)
+                if (number < MinNum || number > MaxNum)
                     continue;
                 if (++appears[number] > 1)
                     return false;
@@ -76,11 +81,11 @@ namespace Sudoku
 
         public bool IsValidField()
         {
-            for (int rcz = 0; rcz < 9; rcz++)
+            for (int pos = MinPos; pos <= MaxPos; pos++)
             {
-                if (!IsValidRow(rcz)) return false;
-                if (!IsValidColumn(rcz)) return false;
-                if (!IsValidZone(rcz)) return false;
+                if (!IsValidRow(pos)) return false;
+                if (!IsValidColumn(pos)) return false;
+                if (!IsValidZone(pos)) return false;
             }
             return true;
         }
@@ -88,10 +93,10 @@ namespace Sudoku
         public bool IsValidRow(int row)
         {
             int[] appears = new int[10];
-            for (int column = 0; column < 9; column++)
+            for (int col = MinPos; col <= MaxPos; col++)
             {
-                int number = _field[row, column];
-                if (number < 1 || number > 9)
+                int number = _field[row, col];
+                if (number < MinNum || number > MaxNum)
                     continue;
                 if (++appears[number] > 1)
                     return false;
@@ -104,10 +109,10 @@ namespace Sudoku
             int[] values = GetZone(zone);
 
             int[] appears = new int[10];    // 0 is blank
-            for (int position = 0; position < 9; position++)
+            for (int position = MinPos; position <= MaxPos; position++)
             {
                 int number = values[position];
-                if (number < 1 || number > 9)
+                if (number < MinNum || number > MaxNum)
                     continue;
                 if (++appears[number] > 1)
                     return false;
@@ -118,19 +123,19 @@ namespace Sudoku
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            for (int r = 0; r < 9; r++)
+            for (int r = MinPos; r <= MaxPos; r++)
             {
                 if (r % 3 == 0)
                 {
                     sb.AppendLine("+-------+-------+-------+");
                 }
-                for (int c = 0; c < 9; c++)
+                for (int c = MinPos; c < MaxPos; c++)
                 {
                     if (c % 3 == 0)
                     {
                         sb.Append("| ");
                     }
-                    if (_field[r, c] >= 1 && _field[r, c] <= 9)
+                    if (_field[r, c] >= MinNum && _field[r, c] <= MaxNum)
                     {
                         sb.Append(_field[r, c].ToString() + ' ');
                     }
